@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#04090f">
+<title>GULAM EXPLOITS // White Hat</title>
+<link rel="preload" as="image" href="profile.png" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--cr:34,230,255;--mr:61,255,184;
+  --bg:#03080d;--cyan:#22e6ff;--mint:#3dffb8;--violet:#7a6bff;
+  --glass:rgba(255,255,255,.055);--glass-2:rgba(255,255,255,.09);
+  --edge:rgba(255,255,255,.14);--text:#d8f3f8;--dim:rgba(190,235,245,.58);
+  --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Orbitron',sans-serif;
+}
+html{overflow-x:hidden;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.7;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body.intro-active{overflow:hidden;position:fixed;inset:0;width:100%}
+.img-preloader{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* ── background: depth orbs + perspective grid ── */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+.o1{width:320px;height:320px;background:#0a8fa8;top:-80px;left:-90px;animation:drift 18s ease-in-out infinite alternate}
+.o2{width:300px;height:300px;background:#3b2fd1;top:42%;right:-120px;opacity:.38;animation:drift 22s ease-in-out infinite alternate-reverse}
+.o3{width:260px;height:260px;background:#00a37a;bottom:-60px;left:10%;opacity:.35;animation:drift 20s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(40px,60px) scale(1.15)}}
+.floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:55%;
+  background:linear-gradient(rgba(var(--cr),.16) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--cr),.16) 1px,transparent 1px);
+  background-size:48px 48px;transform:perspective(420px) rotateX(62deg);transform-origin:50% 100%;
+  mask-image:linear-gradient(to top,#000 10%,transparent 80%);-webkit-mask-image:linear-gradient(to top,#000 10%,transparent 80%);
+  animation:floorMove 6s linear infinite}
+@keyframes floorMove{to{background-position:0 48px,0 0}}
+.noise{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.14) 3px 4px)}
+
+/* ── status bar ── */
+.status{position:fixed;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;z-index:50;
+  display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-radius:14px;
+  background:rgba(8,18,26,.55);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:1px solid var(--edge);box-shadow:0 8px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);
+  font-size:10px;letter-spacing:2px;color:var(--dim)}
+.status b{font-weight:600;color:var(--mint)}
+.pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint);margin-right:8px;animation:pl 1.6s ease-in-out infinite}
+@keyframes pl{50%{transform:scale(1.5);opacity:.5}}
+
+/* ── layout + glass card base ── */
+main{position:relative;z-index:2;max-width:520px;margin:0 auto;padding:78px 16px 40px;opacity:0;transition:opacity 1.2s ease}
+main.visible{opacity:1}
+.stage{perspective:1100px}
+.glass{position:relative;border-radius:24px;padding:22px;
+  background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+  backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);
+  border:1px solid var(--edge);
+  box-shadow:0 24px 60px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.12) inset,0 0 0 1px rgba(var(--cr),.05);
+  transform-style:preserve-3d;transition:transform .25s ease-out;will-change:transform;overflow:hidden}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(260px circle at var(--mx,50%) var(--my,0%),rgba(var(--cr),.20),transparent 60%)}
+.glass::after{content:"";position:absolute;left:18%;right:18%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.8}
+.glass>*{position:relative}
+section{margin-bottom:22px}
+
+/* ── hero ── */
+.hero{text-align:center;padding:30px 20px 26px}
+.badge-live{display:inline-block;padding:6px 16px;border-radius:99px;font-size:10px;letter-spacing:3px;color:var(--mint);
+  background:rgba(var(--mr),.08);border:1px solid rgba(var(--mr),.35);transform:translateZ(30px)}
+.avatar{position:relative;width:196px;height:196px;margin:30px auto 26px;transform:translateZ(60px)}
+.avatar img{position:relative;z-index:3;width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:center top;
+  border:3px solid rgba(255,255,255,.22);box-shadow:0 18px 40px rgba(0,0,0,.6),0 0 40px rgba(var(--cr),.25);
+  background:#06121a;opacity:0;transition:opacity .6s}
+.avatar img.loaded{opacity:1}
+.ring{position:absolute;inset:-9px;border-radius:50%;z-index:2;padding:3px;
+  background:conic-gradient(var(--cyan),var(--mint),var(--violet),var(--cyan));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:spin 5s linear infinite}
+.orbit{position:absolute;inset:-22px;border-radius:50%;border:1px dashed rgba(var(--cr),.35);animation:spin 16s linear infinite}
+.orbit i{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint),0 0 20px var(--mint)}
+.orbit i:nth-child(1){top:-3px;left:50%;transform:translateX(-50%)}
+.orbit i:nth-child(2){right:-3px;top:50%;transform:translateY(-50%)}
+.orbit i:nth-child(3){bottom:-3px;left:50%;transform:translateX(-50%)}
+.orbit i:nth-child(4){left:-3px;top:50%;transform:translateY(-50%)}
+.btn i{font-size:18px}.fab i{font-size:17px}.dock a span i{font-size:16px}.chip i,.row i,.warn i,footer i{margin-right:6px}
+.halo{position:absolute;inset:-34px;border-radius:50%;z-index:1;background:radial-gradient(circle,rgba(var(--cr),.35),transparent 68%);animation:breathe 4s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{50%{transform:scale(1.12);opacity:.7}}
+.name{font-family:var(--disp);font-weight:900;font-size:30px;letter-spacing:5px;color:#fff;transform:translateZ(50px);
+  text-shadow:0 0 18px rgba(var(--cr),.7),0 4px 0 rgba(0,40,60,.8);animation:glitch 9s steps(1) infinite}
+@keyframes glitch{0%,91%,100%{transform:translateZ(50px)}92%{transform:translateZ(50px) translateX(-3px);color:var(--cyan)}94%{transform:translateZ(50px) translateX(3px);color:var(--mint)}96%{transform:translateZ(50px)}}
+.handle{margin:6px 0 20px;color:var(--mint);letter-spacing:3px;font-size:11px;transform:translateZ(30px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{padding:7px 13px;border-radius:99px;font-size:10px;letter-spacing:1.5px;color:var(--text);
+  background:var(--glass);border:1px solid var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);transition:transform .2s,border-color .2s}
+.chip:hover{transform:translateY(-2px);border-color:rgba(var(--cr),.6)}
+.cta{display:flex;flex-direction:column;gap:12px;margin-top:26px;transform:translateZ(40px)}
+.btn{display:flex;align-items:center;justify-content:center;gap:12px;padding:16px;border-radius:16px;text-decoration:none;
+  font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:3px;color:#fff;position:relative;overflow:hidden;
+  border:1px solid var(--edge);transition:transform .2s,box-shadow .2s;
+  box-shadow:0 10px 24px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn:active{transform:scale(.97)}
+.btn:hover{transform:translateY(-3px)}
+.btn svg{width:18px;height:18px;fill:currentColor}
+.btn-tg{background:linear-gradient(135deg,rgba(var(--cr),.28),rgba(var(--cr),.06));color:#8cf1ff}
+.btn-ig{background:linear-gradient(135deg,rgba(var(--mr),.26),rgba(122,107,255,.12));color:#9dffd8}
+.btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-20deg);animation:shine 5s ease-in-out infinite}
+@keyframes shine{0%{left:-60%}35%,100%{left:140%}}
+
+/* ── terminal ── */
+.term-head{display:flex;align-items:center;gap:7px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--edge)}
+.term-head i{width:10px;height:10px;border-radius:50%}
+.term-head i:nth-child(1){background:#ff5f57}.term-head i:nth-child(2){background:#febc2e}.term-head i:nth-child(3){background:#28c840}
+.term-head span{font-size:10px;letter-spacing:2px;color:var(--dim);margin-left:6px}
+.term-head em{margin-left:auto;font-style:normal;font-size:10px;letter-spacing:2px;color:var(--mint);animation:pl 2s infinite}
+.row{display:flex;gap:10px;margin-bottom:4px}
+.row .k{min-width:68px;color:var(--cyan);font-weight:600}
+.row .p{color:var(--mint)}
+.cursor{display:inline-block;width:8px;height:14px;background:var(--mint);vertical-align:middle;box-shadow:0 0 8px var(--mint);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ── about ── */
+h2{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:4px;color:var(--mint);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--edge),transparent)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{padding:7px 12px;border-radius:10px;font-size:10px;letter-spacing:1.5px;background:var(--glass);border:1px solid var(--edge);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1);transition:transform .2s,box-shadow .2s,border-color .2s}
+.tag:hover{transform:translateY(-3px);border-color:rgba(var(--cr),.55);box-shadow:0 8px 20px rgba(var(--cr),.18)}
+.skills{display:grid;gap:9px}
+.skill{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;background:var(--glass);border:1px solid var(--edge);font-size:11px;letter-spacing:1.5px}
+.skill::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--cyan);box-shadow:0 0 10px var(--cyan);flex:none;transform:rotate(45deg)}
+.nick{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:4px;color:#fff;text-shadow:0 0 14px rgba(var(--cr),.6)}
+.bio{font-size:12px;letter-spacing:.8px;line-height:1.9;color:rgba(216,243,248,.9);text-transform:uppercase}
+footer{text-align:center;font-size:9px;letter-spacing:3px;color:var(--dim);padding:10px 0 30px}
+
+/* ── reveal (single, subtle) ── */
+.r{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.r.on{opacity:1;transform:none}
+
+/* ── intro ── */
+#intro{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;
+  perspective:1100px;touch-action:none;transition:opacity .9s ease,transform .9s ease}
+#intro.out{opacity:0;transform:scale(1.06);pointer-events:none}
+#mx{position:absolute;inset:0;opacity:.22}
+.gate{width:100%;max-width:380px;text-align:center;padding:36px 24px;animation:rise 1s .15s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(30px) rotateX(18deg)}}
+.gate .big{font-family:var(--disp);font-weight:900;font-size:50px;line-height:1.05;letter-spacing:4px;color:#fff;
+  text-shadow:0 0 22px var(--cyan),0 0 60px rgba(var(--cr),.5);margin-bottom:22px;animation:glitch2 7s steps(1) infinite}
+@keyframes glitch2{0%,90%,100%{transform:none}92%{transform:translateX(-4px) skewX(-3deg);color:var(--cyan)}94%{transform:translateX(3px)}96%{transform:none}}
+.gate h3{font-family:var(--disp);font-size:14px;letter-spacing:3px;color:#8cf1ff;margin-bottom:12px;font-weight:700;line-height:1.7}
+.gate p{font-size:11px;letter-spacing:1.5px;color:var(--dim);margin-bottom:30px;line-height:1.9}
+.enter{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:5px;color:#031018;width:100%;padding:18px;border:0;border-radius:16px;cursor:pointer;
+  background:linear-gradient(135deg,var(--cyan),var(--mint));box-shadow:0 12px 30px rgba(var(--cr),.4),inset 0 2px 0 rgba(255,255,255,.5);animation:btnP 2.2s ease-in-out infinite}
+.enter:active{transform:scale(.97)}
+@keyframes btnP{50%{box-shadow:0 14px 44px rgba(var(--cr),.7),inset 0 2px 0 rgba(255,255,255,.5)}}
+.warn{margin-top:24px;font-size:9px;letter-spacing:2px;color:rgba(190,235,245,.35)}
+
+
+/* ── v2: bubbles, colour buttons, website parts ── */
+  background:radial-gradient(circle at 30% 28%,#fff 0,rgba(255,255,255,.6) 14%,var(--b) 50%,rgba(0,0,0,.3) 100%);
+  box-shadow:0 0 18px var(--b),inset -3px -4px 8px rgba(0,0,0,.35),inset 2px 2px 4px rgba(255,255,255,.5);animation:bob 2.4s ease-in-out infinite}
+.handle{margin-bottom:6px}
+.typed{color:var(--mint);font-size:12px;letter-spacing:3px;min-height:22px;margin-bottom:18px;transform:translateZ(30px)}
+.typed::before{content:"> ";color:var(--dim)}
+.chip,.tag{border-color:hsl(var(--h,190) 95% 62%/.55);background:hsl(var(--h,190) 95% 60%/.12)}
+.skill{border-color:hsl(var(--h,190) 95% 62%/.4)}
+.skill::before{background:hsl(var(--h,190) 95% 62%);box-shadow:0 0 10px hsl(var(--h,190) 95% 62%)}
+.btn{color:#fff;border:0;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.btn-tg{background:linear-gradient(135deg,#2aabee,#229ed9 50%,#0a6cc4);box-shadow:0 12px 28px rgba(42,171,238,.45),inset 0 2px 0 rgba(255,255,255,.35)}
+.btn-ig{background:linear-gradient(135deg,#feda75,#fa7e1e 25%,#d62976 55%,#962fbf 80%,#4f5bd5);box-shadow:0 12px 28px rgba(214,41,118,.45),inset 0 2px 0 rgba(255,255,255,.35)}
+section{scroll-margin-top:84px}
+main{padding-bottom:120px}
+.prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:70;background:linear-gradient(90deg,var(--cyan),var(--mint),var(--violet));box-shadow:0 0 12px var(--cyan)}
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom));z-index:50;display:flex;gap:2px;padding:7px;border-radius:22px;
+  background:rgba(8,18,26,.62);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);border:1px solid var(--edge);
+  box-shadow:0 16px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14)}
+.dock a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 11px;border-radius:15px;text-decoration:none;color:var(--dim);font-size:9px;letter-spacing:1px;transition:.25s}
+.dock a span{font-size:17px;line-height:1}
+.dock a.act{color:#031018;background:linear-gradient(135deg,var(--cyan),var(--mint));box-shadow:0 6px 16px rgba(var(--cr),.45)}
+.fabs{position:fixed;right:14px;bottom:100px;z-index:50;display:flex;flex-direction:column;gap:10px}
+.fab{width:44px;height:44px;border-radius:50%;border:1px solid var(--edge);cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;
+  background:rgba(8,18,26,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 10px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+.eq{display:flex;align-items:flex-end;gap:3px;height:16px}
+.eq i{width:3px;height:4px;border-radius:2px;background:var(--mint)}
+.fab.on .eq i{animation:eq .9s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:.2s!important}.eq i:nth-child(3){animation-delay:.4s!important}
+@keyframes eq{50%{height:16px}}
+.toast{position:fixed;left:50%;bottom:112px;transform:translate(-50%,14px);opacity:0;z-index:80;padding:10px 18px;border-radius:99px;font-size:11px;letter-spacing:1.5px;
+  background:rgba(8,18,26,.85);backdrop-filter:blur(14px);border:1px solid var(--edge);color:var(--mint);transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stat b{display:block;font-family:var(--disp);font-size:28px;font-weight:900;color:#fff;text-shadow:0 0 16px rgba(var(--cr),.7)}
+.stat small{font-size:9px;letter-spacing:2px;color:var(--dim)}
+.acc details{border-bottom:1px solid var(--edge);padding:12px 0}
+.acc details:last-child{border:0}
+.acc summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;font-size:12px;letter-spacing:1.5px;color:#fff}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";color:var(--mint);font-size:16px;transition:transform .25s}
+.acc details[open] summary::after{transform:rotate(45deg)}
+.acc p{margin-top:8px;color:var(--dim);font-size:12px;line-height:1.8}
+.contact{text-align:center}.contact p{color:var(--dim);margin-bottom:18px;font-size:12px}
+.contact .cta{margin-top:0}
+/* performance */
+.orb{filter:none;animation:none;opacity:1}
+.o1{background:radial-gradient(circle,rgba(10,143,168,.6),transparent 68%)}
+.o2{background:radial-gradient(circle,rgba(59,47,209,.45),transparent 68%)}
+.o3{background:radial-gradient(circle,rgba(0,163,122,.4),transparent 68%)}
+.floor{animation:none}
+.noise{opacity:.3}
+.halo{animation:none}
+.glass{backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);transform-style:flat;will-change:auto;box-shadow:0 14px 34px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.12)}
+.glass.hero{transform-style:preserve-3d}
+.gate{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(8,18,26,.78)}
+.status,.dock{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.fab,.toast{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(8,18,26,.92)}
+.prog{width:100%;transform:scaleX(0);transform-origin:0 50%}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+@media(max-width:400px){.name{font-size:25px;letter-spacing:3px}.avatar{width:168px;height:168px}.gate .big{font-size:42px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.r{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<img src="profile.png" class="img-preloader" alt="" aria-hidden="true">
+
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="floor"></div></div>
+<div class="noise"></div>
+
+<div class="status"><span><span class="pulse"></span>ETHICAL MODE // <b>ON</b></span><span>ACCESS // <b>GRANTED</b></span></div>
+
+<div class="prog" id="prog"></div>
+<nav class="dock" id="dock" aria-label="Sections">
+  <a href="#home" class="act"><span><i class="fa-solid fa-house"></i></span>HOME</a><a href="#about"><span><i class="fa-solid fa-user"></i></span>ABOUT</a><a href="#skills"><span><i class="fa-solid fa-bolt"></i></span>SKILLS</a><a href="#tips"><span><i class="fa-solid fa-shield-halved"></i></span>TIPS</a><a href="#contact"><span><i class="fa-solid fa-envelope"></i></span>CONTACT</a>
+</nav>
+<div class="fabs"><button class="fab" id="fm" aria-label="Toggle music"><span class="eq"><i></i><i></i><i></i></span></button><button class="fab" id="ft" aria-label="Change theme"><i class="fa-solid fa-palette"></i></button></div>
+<div class="toast" id="toast"></div>
+<main id="main">
+  <section id="home" class="stage r">
+    <div class="glass hero tilt">
+      <div class="badge-live">WHITE HAT HACKER</div>
+      <div class="avatar">
+        <div class="halo"></div><div class="orbit"><i></i><i></i><i></i><i></i></div><div class="ring"></div>
+        <img class="profile-img" src="profile.png" alt="GULAM EXPLOITS" width="196" height="196" loading="eager" fetchpriority="high" decoding="async">
+      </div>
+      <div class="name">GULAM EXPLOITS</div>
+      <div class="handle">[ @Gulam_exploits_mastermind ]</div>
+      <div class="typed"><span id="typed"></span><span class="cursor"></span></div>
+      <div class="chips">
+        <span class="chip"><i class="fa-solid fa-shield-halved"></i>ETHICAL HACKER</span><span class="chip"><i class="fa-solid fa-user-secret"></i>WHITE HAT</span><span class="chip"><i class="fa-solid fa-magnifying-glass"></i>SECURITY RESEARCHER</span>
+      </div>
+      <div class="cta">
+        <a class="btn btn-tg" href="https://t.me/bomberpp" target="_blank" rel="noopener">
+          <i class="fa-brands fa-telegram"></i>
+          TELEGRAM CHANNEL
+        </a>
+        <a class="btn btn-ig" href="https://www.instagram.com/gulam_exploits?xtok=N3Mxamp2dXliYm9w" target="_blank" rel="noopener">
+          <i class="fa-brands fa-instagram"></i>
+          INSTAGRAM
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="term" class="stage r">
+    <div class="glass tilt">
+      <div class="term-head"><i></i><i></i><i></i><span>GULAM_EXPLOITS.exe</span><em>● LIVE</em></div>
+      <div class="row"><span class="p">root@0x00:~$</span><span style="color:var(--dim)">cat identity.cfg</span></div>
+      <div class="row"><span class="k">NAME</span><span>➜ GULAM EXPLOITS</span></div>
+      <div class="row"><span class="k">AGE</span><span>➜ 17 [ 24/06/2009 ]</span></div>
+      <div class="row"><span class="k">ROLE</span><span>➜ <i class="fa-solid fa-user-secret"></i>White Hat // Ethical Hacker</span></div>
+      <div class="row"><span class="k">OS</span><span>➜ Kali Linux // Secure Mode</span></div>
+      <div class="row"><span class="k">STATUS</span><span>➜ Building safe systems... <i class="fa-solid fa-lock"></i></span></div>
+      <div class="row"><span class="k">ACCESS</span><span style="color:var(--mint)">➜ ETHICAL // AUTHORIZED</span></div>
+      <div class="row"><span class="k">UPTIME</span><span id="up">➜ 00:00:00</span></div>
+      <div class="row" style="margin-top:8px"><span class="p">root@0x00:~$</span><span class="cursor"></span></div>
+    </div>
+  </section>
+
+  <section class="stage r"><div class="glass tilt"><div class="stats">
+    <div class="stat"><b data-n="11">0</b><small>TECHNOLOGIES</small></div>
+    <div class="stat"><b data-n="7">0</b><small>SKILLS</small></div>
+    <div class="stat"><b data-n="100" data-s="%">0</b><small>ETHICAL</small></div></div></div></section>
+
+  <section id="about" class="stage r">
+    <div class="glass tilt"><h2>NICK NAME</h2><div class="nick">GULAM EXPLOITS</div></div>
+  </section>
+
+  <section id="know" class="stage r">
+    <div class="glass tilt"><h2>MY KNOWLEDGE</h2>
+      <div class="tags">
+        <span class="tag">ETHICAL HACKING</span><span class="tag">PYTHON</span><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JAVASCRIPT</span>
+        <span class="tag">REVERSE ENGINEERING</span><span class="tag">PENETRATION TESTING</span><span class="tag">NETWORK SECURITY</span><span class="tag">CRYPTOGRAPHY</span><span class="tag">BASH</span><span class="tag">C++</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills" class="stage r">
+    <div class="glass tilt"><h2>MY SKILLS</h2>
+      <div class="skills">
+        <div class="skill">WEB APP SECURITY</div><div class="skill">REVERSE ENGINEERING</div><div class="skill">MALWARE ANALYSIS</div>
+        <div class="skill">VULNERABILITY ASSESSMENT</div><div class="skill">SECURE CODE REVIEW</div><div class="skill">PHISHING PROTECTION</div><div class="skill">APK SECURITY TESTING</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bio" class="stage r">
+    <div class="glass tilt"><h2>BIO</h2>
+      <p class="bio">I am a white hat hacker dedicated to securing the digital world. My expertise lies in penetration testing, vulnerability research, and reverse engineering. I build secure web applications, analyze malware, and help organizations strengthen their defenses. I operate with full authorization and ethical responsibility — protecting systems, not breaking them. Security is not a product, it's a mindset.<span class="cursor" style="margin-left:4px"></span></p>
+    </div>
+  </section>
+
+  <section id="tips" class="stage r"><div class="glass tilt acc"><h2>SECURITY TIPS</h2>
+    <details><summary>Use a password manager</summary><p>Unique long passwords for every account. One breach should never open the rest.</p></details>
+    <details><summary>Turn on two-factor login</summary><p>Prefer an authenticator app over SMS. It blocks most account takeovers.</p></details>
+    <details><summary>Think before you click</summary><p>Check the sender and the real link address. Urgent messages asking for codes are phishing.</p></details>
+    <details><summary>Keep everything updated</summary><p>Install system and app updates. Most attacks use bugs that are already fixed.</p></details>
+  </div></section>
+
+  <section id="contact" class="stage r"><div class="glass tilt contact"><h2>CONTACT</h2>
+    <p>Want a security chat or have a question? Message me.</p>
+    <div class="cta">
+      <a class="btn btn-tg" href="https://t.me/bomberpp" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i>MESSAGE ON TELEGRAM</a>
+      <a class="btn btn-ig" href="https://www.instagram.com/gulam_exploits?xtok=N3Mxamp2dXliYm9w" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i>FOLLOW ON INSTAGRAM</a>
+    </div></div></section>
+
+  <footer>[ GULAM EXPLOITS] <i class="fa-solid fa-lock"></i>SYSTEMS SECURED // ETHICAL HACKER // 2026</footer>
+</main>
+
+<audio id="bgMusic" loop preload="auto"><source src="music.mp4" type="audio/mpeg"></audio>
+
+<div id="intro">
+  <canvas id="mx"></canvas>
+  <div class="glass gate">
+    <div class="big">GULAM<br>EXPLOITS</div>
+    <h3>KNOW ABOUT ME —<br>WHO AM I?</h3>
+    <p>ENTER MY DIGITAL DOMAIN TO<br>EXPLORE MY SKILLS AND KNOWLEDGE</p>
+    <button class="enter" id="enterBtn">ENTER SYSTEM</button>
+    <div class="warn"><i class="fa-solid fa-triangle-exclamation"></i>AUTHORIZED ETHICAL ACCESS ONLY</div>
+  </div>
+</div>
+
+<script>
+document.body.classList.add('intro-active');
+
+/* service worker */
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+
+/* profile image fade-in */
+(function(){var i=document.querySelector('.profile-img');function ok(){i.classList.add('loaded')}
+if(i.complete&&i.naturalWidth)ok();else{i.addEventListener('load',ok);i.addEventListener('error',ok)}})();
+
+/* matrix rain */
+var cv=document.getElementById('mx'),cx=cv.getContext('2d'),run=true,drops;
+function size(){cv.width=innerWidth;cv.height=innerHeight;drops=Array(Math.floor(cv.width/16)).fill(1)}
+size();addEventListener('resize',size);
+var lt=0;(function draw(t){t=t||0;if(!run)return;if(t-lt<45){requestAnimationFrame(draw);return}lt=t;cx.fillStyle='rgba(3,8,13,.06)';cx.fillRect(0,0,cv.width,cv.height);
+cx.fillStyle='#22e6ff';cx.font='14px monospace';
+drops.forEach(function(y,i){cx.fillText(Math.random()>.5?'1':'0',i*16,y*16);if(y*16>cv.height&&Math.random()>.975)drops[i]=0;drops[i]++});
+requestAnimationFrame(draw)})();
+
+/* enter */
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+document.getElementById('enterBtn').addEventListener('click',function(){
+  var m=document.getElementById('bgMusic');m.volume=.6;m.play().catch(function(){});
+  var intro=document.getElementById('intro');intro.classList.add('out');run=false;
+  setTimeout(function(){intro.style.display='none';document.body.classList.remove('intro-active');
+    document.getElementById('main').classList.add('visible');reveal()},reduce?0:800);
+});
+
+/* reveal on scroll */
+function reveal(){var els=document.querySelectorAll('.r');
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('on')});return}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}})},{threshold:.08});
+  els.forEach(function(e){io.observe(e)})}
+
+/* 3D tilt (mouse devices only) */
+if(!reduce&&matchMedia('(hover:hover)').matches){document.querySelectorAll('.tilt').forEach(function(el){var f=0,ev;
+function leave(){el.style.transform='';el.style.setProperty('--my','0%')}
+function apply(){f=0;var r=el.getBoundingClientRect(),x=(ev.clientX-r.left)/r.width,y=(ev.clientY-r.top)/r.height;
+el.style.transform='rotateY('+((x-.5)*10)+'deg) rotateX('+((.5-y)*10)+'deg)';el.style.setProperty('--mx',x*100+'%');el.style.setProperty('--my',y*100+'%')}
+el.addEventListener('pointermove',function(e){if(e.pointerType==='touch')return;if(e.target.closest('a,button,summary')){leave();return}ev=e;if(!f)f=requestAnimationFrame(apply)});
+el.addEventListener('pointerleave',leave)})}
+
+/* ── v2 features ── */
+document.querySelectorAll('.chip,.tag,.skill').forEach(function(e,i){e.style.setProperty('--h',(i*37+175)%360)});
+(function(){var w=['ETHICAL HACKER','WHITE HAT','SECURITY RESEARCHER','REVERSE ENGINEER'],t=document.getElementById('typed'),i=0,j=0,d=0;
+function s(){var x=w[i],ms;j+=d?-1:1;t.textContent=x.slice(0,j);ms=d?35:70;
+if(!d&&j==x.length){d=1;ms=1400}else if(d&&j==0){d=0;i=(i+1)%w.length;ms=300}setTimeout(s,ms)}s()})();
+var t0=Date.now(),up=document.getElementById('up');
+setInterval(function(){var n=Math.floor((Date.now()-t0)/1000),p=function(v){return String(v).padStart(2,'0')};
+up.textContent='➜ '+p(Math.floor(n/3600))+':'+p(Math.floor(n/60)%60)+':'+p(n%60)},1000);
+var tt=document.getElementById('toast'),tm;
+function toast(m){tt.textContent=m;tt.classList.add('show');clearTimeout(tm);tm=setTimeout(function(){tt.classList.remove('show')},1800)}
+var pr=document.getElementById('prog');
+var pt=0;addEventListener('scroll',function(){if(pt)return;pt=requestAnimationFrame(function(){pt=0;var h=document.documentElement;pr.style.transform='scaleX('+(h.scrollTop/((h.scrollHeight-h.clientHeight)||1))+')'})},{passive:true});
+(function(){var links=document.querySelectorAll('#dock a');
+if(!('IntersectionObserver' in window))return;
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)links.forEach(function(a){a.classList.toggle('act',a.getAttribute('href')=='#'+e.target.id)})})},{rootMargin:'-40% 0px -55% 0px'});
+['home','about','skills','tips','contact'].forEach(function(id){io.observe(document.getElementById(id))});
+var co=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;co.unobserve(e.target);var b=e.target,n=+b.dataset.n,sf=b.dataset.s||'',k=0;
+var iv=setInterval(function(){k++;b.textContent=Math.round(n*k/30)+sf;if(k>=30)clearInterval(iv)},30)})},{threshold:.5});
+document.querySelectorAll('.stat b').forEach(function(b){co.observe(b)})})();
+var au=document.getElementById('bgMusic'),fm=document.getElementById('fm');
+au.addEventListener('play',function(){fm.classList.add('on')});au.addEventListener('pause',function(){fm.classList.remove('on')});
+fm.addEventListener('click',function(){if(au.paused){au.play().catch(function(){toast('Add music.mp4 file')})}else au.pause()});
+var th=[['#22e6ff','#3dffb8','#7a6bff','34,230,255','61,255,184'],['#39ff6a','#c6ff3d','#00c2a8','57,255,106','198,255,61'],['#ff4fd8','#ffb43d','#7a6bff','255,79,216','255,180,61'],['#ffb43d','#ff5a3d','#ff4fd8','255,180,61','255,90,61']],ti=0,nm=['Cyber','Matrix','Neon','Sunset'];
+document.getElementById('ft').addEventListener('click',function(){ti=(ti+1)%th.length;var r=document.documentElement.style,x=th[ti];
+r.setProperty('--cyan',x[0]);r.setProperty('--mint',x[1]);r.setProperty('--violet',x[2]);r.setProperty('--cr',x[3]);r.setProperty('--mr',x[4]);toast('Theme: '+nm[ti])});
+</script>
+</body>
+</html>
